@@ -43,7 +43,7 @@ public class SRCountdownTimer: UIView {
     @IBInspectable public var timerFinishingText: String?
 
     public weak var delegate: SRCountdownTimerDelegate?
-    
+
     // use minutes and seconds for presentation
     public var useMinutesAndSecondsRepresentation = false
 
@@ -146,7 +146,11 @@ public class SRCountdownTimer: UIView {
         currentCounterValue = beginingValue
 
         timer?.invalidate()
-        timer = Timer(timeInterval: fireInterval, repeats: true) { timer in
+        self.beginingValue=beginingValue
+        self.interval=interval
+        timer = Timer.scheduledTimer(timeInterval: fireInterval, target: self, selector: #selector(timerCallBack), userInfo: nil, repeats: true)
+
+        /*timer = Timer(timeInterval: fireInterval, repeats: true) { timer in
             self.elapsedTime += self.fireInterval
 
             if self.elapsedTime < self.totalTime {
@@ -159,10 +163,27 @@ public class SRCountdownTimer: UIView {
             } else {
                 self.end()
             }
-        }
+        }*/
         RunLoop.main.add(timer!, forMode: .defaultRunLoopMode)
 
         delegate?.timerDidStart?()
+    }
+
+    var beginingValue: Int=0
+    var interval: TimeInterval=1
+    @objc func timerCallBack() {
+        self.elapsedTime += self.fireInterval
+
+        if self.elapsedTime < self.totalTime {
+            self.setNeedsDisplay()
+
+            let computedCounterValue = beginingValue - Int(self.elapsedTime / interval)
+            if computedCounterValue != self.currentCounterValue {
+                self.currentCounterValue = computedCounterValue
+            }
+        } else {
+            self.end()
+        }
     }
 
     /**
